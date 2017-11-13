@@ -1,19 +1,20 @@
-import {Component} from '@angular/core';
+import {Component , OnInit } from '@angular/core';
 import {Iproduct} from './products';
+import {ProductService} from './product.service';
 
 
 @Component({
-  selector: 'pm-product',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.css']
 
 })
 
-export class ProductListComponent {
+export class ProductListComponent implements OnInit {
   pageTitle: string = 'Product-List';
   imageWidth: number = 50;
   imageMargin: number = 2;
   showImage: boolean = false;
+  errorMessage: string;
 
   _ListFilter:string;
   get ListFilter(): string {
@@ -24,43 +25,28 @@ export class ProductListComponent {
     this.filteredProduct = this.ListFilter ? this.PerformFilter(this.ListFilter): this.products;
   }
   filteredProduct: Iproduct[];
-  products: Iproduct[] = [
-      {
-        'productId': 1,
-        'productName': 'Leaf Rake',
-        'productCode': 'GDN-0011',
-        'releaseDate': 'March 19, 2016',
-        'description': 'Leaf rake with 48-inch wooden handle.',
-        'price': 19.95,
-        'starRating': 3.2,
-        'imageUrl': 'http://openclipart.org/image/300px/svg_to_png/26215/Anonymous_Leaf_Rake.png'
-      },
-      {
-        'productId': 2,
-        'productName': 'Garden Cart',
-        'productCode': 'GDN-0023',
-        'releaseDate': 'March 18, 2016',
-        'description': '15 gallon capacity rolling garden cart',
-        'price': 32.99,
-        'starRating': 4.2,
-        'imageUrl': 'http://openclipart.org/image/300px/svg_to_png/58471/garden_cart.png'
-      }
-    ];
+  products: Iproduct[] = [];
 
-    toggleImage(): void {
-      this.showImage = !this.showImage;
-    }
-
-      constructor(){
-        this.filteredProduct = this.products;
-        this.ListFilter= 'ca';
+      toggleImage(): void {
+         this.showImage = !this.showImage;
       }
 
-       PerformFilter(filterBy: string):Iproduct[] {
+      constructor(private _productservice: ProductService) {
 
+      }
+
+      PerformFilter(filterBy  : string):Iproduct[] {
         return this.products.filter((product: Iproduct) =>
           product.productName.toLocaleLowerCase().indexOf(filterBy.toLocaleLowerCase()) !== -1
           );
 
-       }
+      }
+
+      ngOnInit():void {
+        this._productservice.getProducts().
+          subscribe(products => {this.products = products
+                   this.filteredProduct = this.products},
+                    error => this.errorMessage = <any>error);
+
+      }
 }
